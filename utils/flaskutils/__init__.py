@@ -1,7 +1,9 @@
 import os
 import json
+from httplib import INTERNAL_SERVER_ERROR
 
 from flask import current_app
+from werkzeug.exceptions import HTTPException
 from webassets.filter import Filter
 
 class RegisterJst(Filter):
@@ -24,3 +26,11 @@ class RegisterJst(Filter):
         %s
         })();""" %(out_data,)
         out.write(out_data)
+
+class CustomHTTPException(HTTPException):
+    def __init__(self, body=None, code=INTERNAL_SERVER_ERROR, headers=None):
+        self.body = '' if body is None else body
+        self.code = code
+        self.headers = headers or {}
+    def get_body(self, environ):
+        return self.body
