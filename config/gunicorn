@@ -1,0 +1,9 @@
+#!python
+from config.cdn import get_cache
+
+preload=True
+worker_class="gevent"
+workers=8
+worker_connections=8
+def on_starting(server):
+    get_cache(force_rebuild=True)

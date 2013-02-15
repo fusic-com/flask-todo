@@ -1,0 +1,36 @@
+#!/bin/sh
+
+if [ -z "$DEBUG" ]; then
+    echo '       ERROR: unable to find DEBUG environment variable!'
+    echo '              (did you run "heroku labs:enable user-env-compile" for this app?)'
+    exit 1
+fi
+
+vendor() {
+    printf "       "
+    echo -n "$1 "
+    curl --location --fail --silent $1 | tar -zx -C vendor && echo OK
+}
+
+echo "       (lines by the app will be prefixed with ---->>)"
+echo "---->> Fetching vendored binaries"
+mkdir -p vendor
+vendor "http://fusic.s3.amazonaws.com/executables/heroku/coffee-script-1.4.0.tar.gz"
+vendor "http://fusic.s3.amazonaws.com/executables/heroku/libpcre3-dev-7.8-3build1.tar.gz"
+vendor "http://fusic.s3.amazonaws.com/executables/heroku/node-0.8.17.tar.gz"
+
+if ! grep -q psycopg2 requirements.txt; then
+    echo "---->> Injecting psycopg2 requirement to requirements.txt"
+    echo psycopg2==2.4.6 >> requirements.txt
+fi
+
+echo "---->> Injecting shell environment"
+# Even though Heroku's Python buildback has a hook mechanism, hooks can't change the buildpack's process environment
+#  (they are spawned, not sourced). This makes it possible to write hooks in any language, but makes vendoring stuff
+#  that should be linked against libraries installed during the rest of the build process harder. The kludge below
+#  hijacks $BIN_DIR/steps/pylibmc, which is sourced after this code and before pip is ran. Puked a little in my mouth.
+# See also: https://twitter.com/aknin/status/290832546260979712
+cat > $BIN_DIR/steps/pylibmc << EOF
+echo "---->> Injected environment hook executing"
+source .profile.d/activate_vendor_tree.sh
+EOF

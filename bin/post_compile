@@ -1,0 +1,16 @@
+#!/bin/sh
+
+[ "`uname`" = "Darwin" ] && SED_FLAG='-l' || SED_FLAG='-u'
+indent() {
+  RE="s/^/       /"
+  sed $SED_FLAG "$RE"
+}
+
+# argparse is part of Python 2.7, but some of our dependencies install it anyway; this causes ugly warnings
+pip --quiet uninstall --yes argparse
+
+# we need vendored binaries to run our code, and our code must run to do things like building assets
+. .profile.d/activate_vendor_tree.sh
+
+echo "---->> Building webassets"
+./manage.py assets build 2>&1 | indent
