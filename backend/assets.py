@@ -25,7 +25,10 @@ assets.url = proxied('/static/')
 class Special(str): pass
 class Depends(Special): pass
 
-asset_spec = {}
+asset_spec = {
+    "index.js": ('index/*.coffee','index/*.jst',),
+    "index.css": ('index/*.scss',),
+}
 
 def get_rules(kind):
     if kind == '.css':
