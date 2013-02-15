@@ -1,5 +1,9 @@
+from functools import wraps
+
 from flask import request
+
 from flask.ext.restful import Api
+from flask.ext.restful.reqparse import RequestParser
 
 def patched_to_marshallable_type(obj):
     """adds __marshallable__ support; see https://github.com/twilio/flask-restful/pull/32"""
@@ -39,3 +43,26 @@ class BetterErrorHandlingApi(Api):
             return rv
         return super(BetterErrorHandlingApi, self).handle_error(e)
 
+def parse_with(*arguments, **kwargs):
+    """This decorator allows you to easily augment any method (typically a
+       view method) to access reqparse based arguments, i.e.:
+
+       class Users(Resource):
+           @parse_with(Argument('profession'))
+           def post(self, params, username):
+               create_new_user(username, params.profession)
+               return 'CREATED', 201
+
+       api.add_resource(Users, '/<username>', endpoint='users')
+    """
+    parser = kwargs.pop('parser', RequestParser())
+    if kwargs: # mimic py3k style named-arguments after *args, i.e., def f(a, *b, c=1)
+        raise TypeError("unexpected keyword argument '%s'" % (kwargs.popitem()[0],))
+    for argument in arguments:
+        parser.args.append(argument)
+    def decor(func):
+        @wraps(func)
+        def inner(self, *args, **kwargs):
+            return func(self, parser.parse_args(), *args, **kwargs)
+        return inner
+    return decor
