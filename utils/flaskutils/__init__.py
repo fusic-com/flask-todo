@@ -4,7 +4,7 @@ import json
 import logging
 import os
 
-from flask import current_app, request, g
+from flask import current_app, request, g, session
 from werkzeug.exceptions import HTTPException
 from webassets.filter import Filter
 
@@ -67,8 +67,12 @@ def install_request_logger(app, single_threaded, logger, *unlogged_prefixes):
             size = int(request.headers['Content-Length'])
         except (KeyError, ValueError):
             size = -1
-        logger.debug('>     %(method)-4s %(location)s agent=%(agent)s size=%(size)d', make_context(
-            agent=request.user_agent.browser, size=size,
+        try:
+            g.userid = int(session['user_id'])
+        except (KeyError, ValueError):
+            g.userid = -1
+        logger.debug('>     %(method)-4s %(location)s agent=%(agent)s userid=%(userid)d size=%(size)d', make_context(
+            agent=request.user_agent.browser, userid=g.userid, size=size,
         ))
     @app.after_request
     def logging_after(response):
@@ -86,7 +90,7 @@ def install_request_logger(app, single_threaded, logger, *unlogged_prefixes):
             size = -1
         context = make_context(
             status=response.status_code, wall=g.timer.elapsed, response_size=size, secure=request.is_secure,
-            agent=request.user_agent.string, ip=request.access_route[0], rqid=g.uuid.hex[:6],
+            agent=request.user_agent.string, ip=request.access_route[0], rqid=g.uuid.hex[:6], userid=g.userid
         )
         fmt = '< %(status)d %(method)-4s %(location)s wall=%(wall).1f size=%(response_size)d'
         if single_threaded:

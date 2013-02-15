@@ -15,5 +15,6 @@ SERVER_URL=netloc(SERVER_NAME)
 AWS_ACCESS_KEY_ID=optional('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY=optional('AWS_SECRET_ACCESS_KEY')
 SQLALCHEMY_DATABASE_URI = Url(required('DATABASE_URL'))
+SECRET_KEY=required('SECRET_KEY')
 
 del required, optional, boolean

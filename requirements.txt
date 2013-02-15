@@ -1,5 +1,6 @@
 Flask==0.9
 Flask-Assets==0.8
+Flask-Login==0.1.3
 Flask-RESTful==0.1.5
 Flask-SQLAlchemy==0.16
 Flask-Script==0.5.3

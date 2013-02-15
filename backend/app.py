@@ -35,5 +35,6 @@ def initialize_app(settings):
     import views ; views
     import assets ; assets
     import api ; api
+    import auth ; auth
 
     return app

@@ -1,0 +1,31 @@
+{% extends "main.html" %}
+
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript">
+        $(function () {
+            $("a").click(function(event) {
+                event.preventDefault();
+                xhr = $.ajax($(event.target).attr("href"), {
+                    type: "PUT",
+                    data: {
+                        kind: "demoauth",
+                        username: "demo",
+                    },
+                    dataType: "json"
+                });
+                xhr.done(function() {
+                    alert("you are now logged in");
+                });
+                xhr.fail(function() {
+                    alert("error logging in");
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+    <a href="/api/session">login</a>
+{% endblock %}

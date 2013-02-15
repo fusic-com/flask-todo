@@ -11,6 +11,7 @@ export AWS_ACCESS_KEY_ID=""
 export AWS_SECRET_ACCESS_KEY=""
 export SERVER_NAME='localhost:5000'
 export DATABASE_URL="sqlite:///${VAR_DIR}/database.sqlite"
+export SECRET_KEY="development"
 
 # local runcommands
 [ -f "${root}"/runcommands.local.sh ] && source runcommands.local.sh
