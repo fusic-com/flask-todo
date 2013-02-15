@@ -1,5 +1,6 @@
 Flask==0.9
 Flask-Assets==0.8
+Flask-RESTful==0.1.5
 Flask-SQLAlchemy==0.16
 Flask-Script==0.5.3
 Jinja2==2.6
@@ -7,8 +8,9 @@ SQLAlchemy==0.8.0b2
 URLObject==2.3.1
 Werkzeug==0.8.3
 boto==2.8.0
-pyScss==1.1.4
 ipython==0.13.1
+pyScss==1.1.4
+pycrypto==2.6
 readline==6.2.4.1
 webassets==0.8
 wsgiref==0.1.2

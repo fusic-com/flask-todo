@@ -13,5 +13,6 @@ def initialize_app(settings):
     import views ; views
     import assets ; assets
     import models ; models
+    import api ; api
 
     return app
