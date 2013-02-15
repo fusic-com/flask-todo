@@ -4,6 +4,7 @@ from __future__ import print_function
 
 # import 3rd party libraries
 from flask.ext.script import Manager
+from flask.ext.assets import ManageAssets
 from werkzeug.serving import run_simple, WSGIRequestHandler
 
 # patch builtins to add INTERACT
@@ -23,8 +24,10 @@ from utils.ext.path import Path
 from config.log import setup_logging
 from backend.models import db
 
-manager = Manager(app)
 setup_logging('scss')
+
+manager = Manager(app)
+manager.add_command('assets', ManageAssets())
 
 @manager.command
 def runserver(port=5000, bindhost='127.0.0.1'):
