@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 
+# import 3rd party libraries
 from flask.ext.script import Manager
+from werkzeug.serving import run_simple, WSGIRequestHandler
 
 # patch builtins to add INTERACT
 import __builtin__
@@ -18,9 +20,19 @@ app = initialize_app(settings)
 from utils.ext.path import Path
 
 # import our code after initialization of app
+from config.log import setup_logging
 from backend.models import db
 
 manager = Manager(app)
+setup_logging('scss')
+
+@manager.command
+def runserver(port=5000, bindhost='127.0.0.1'):
+    "start the development server"
+    class SilentWSGIRequestHandler(WSGIRequestHandler):
+        def log_request(self, *args, **kwargs): pass
+    run_simple(bindhost, port, app, request_handler=SilentWSGIRequestHandler,
+               use_reloader=app.debug, use_debugger=app.debug)
 
 @manager.command
 def recreatedb():

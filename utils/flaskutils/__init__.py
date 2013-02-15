@@ -1,10 +1,14 @@
-import os
-import json
 from httplib import INTERNAL_SERVER_ERROR
+from uuid import uuid4
+import json
+import logging
+import os
 
-from flask import current_app
+from flask import current_app, request, g
 from werkzeug.exceptions import HTTPException
 from webassets.filter import Filter
+
+from ..datautils import CPUTime, Timer, thresholds
 
 class RegisterJst(Filter):
     name = "register_jst"
@@ -34,3 +38,62 @@ class CustomHTTPException(HTTPException):
         self.headers = headers or {}
     def get_body(self, environ):
         return self.body
+
+def install_request_logger(app, single_threaded, logger, *unlogged_prefixes):
+    def make_context(**kwargs):
+        location = request.path
+        if request.query_string:
+            location += "?" + request.query_string
+        return dict(
+            uuid = g.uuid,
+            method = request.method[:4],
+            location = location,
+            **kwargs
+        )
+    def should_skip_logging():
+        for prefix in unlogged_prefixes:
+            if request.path.startswith(prefix):
+                return True
+        return False
+    @app.before_request
+    def logging_before():
+        g.uuid = uuid4()
+        g.timer = Timer()
+        g.cpu = CPUTime()
+        g.queries = 0
+        if should_skip_logging():
+            return
+        try:
+            size = int(request.headers['Content-Length'])
+        except (KeyError, ValueError):
+            size = -1
+        logger.debug('>     %(method)-4s %(location)s agent=%(agent)s size=%(size)d', make_context(
+            agent=request.user_agent.browser, size=size,
+        ))
+    @app.after_request
+    def logging_after(response):
+        if should_skip_logging():
+            return response
+        level = thresholds(response.status_code, (
+            (logging.DEBUG, 300),
+            (logging.INFO, 400),
+            (logging.WARNING, 500),
+            (logging.ERROR, 600)
+        ), logging.CRITICAL)
+        try:
+            size = int(response.headers['Content-Length'])
+        except (KeyError, ValueError):
+            size = -1
+        context = make_context(
+            status=response.status_code, wall=g.timer.elapsed, response_size=size, secure=request.is_secure,
+            agent=request.user_agent.string, ip=request.access_route[0], rqid=g.uuid.hex[:6],
+        )
+        fmt = '< %(status)d %(method)-4s %(location)s wall=%(wall).1f size=%(response_size)d'
+        if single_threaded:
+            context.update(queries=g.queries, cpu=round(g.cpu.elapsed, 3))
+            fmt += ' cpu=%(cpu).1f queries=%(queries)d'
+        logger.log(level, fmt, context)
+        return response
+    def query_count_increment(*a):
+        g.queries += 1
+    return query_count_increment

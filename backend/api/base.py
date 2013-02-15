@@ -5,14 +5,9 @@ from flask import request
 from flask.ext.restful import marshal, marshal_with, Resource
 from flask.ext.restful.reqparse import Argument
 
+from utils.datautils import positive_integer
 from utils.flaskutils import CustomHTTPException
 from utils.flaskutils.restful import parse_with
-
-def positive_integer(n):
-    n = int(n)
-    if n < 1:
-        raise ValueError(n)
-    return n
 
 class lazy_marshal_with(marshal_with):
     def __call__(self, f):
