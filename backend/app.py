@@ -12,5 +12,6 @@ def initialize_app(settings):
     # the `import x; x` idiom silences pyflakes etc
     import views ; views
     import assets ; assets
+    import models ; models
 
     return app
