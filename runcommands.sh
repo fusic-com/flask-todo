@@ -1,5 +1,5 @@
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
-root="$( cd "$( dirname "$0" )" && pwd )"
+root="$( cd "$( dirname -- "$0" )" && pwd )"
 
 # provision directories for dev environment
 export VAR_DIR="${root}/.venv/var"
@@ -38,5 +38,11 @@ out("PGDATABASE", url.path[1:])
 EOF
 )
 }
+
+# provisioning
+function whence() { which $1 > /dev/null; }
+whence coffee || echo '`coffee` missing from path; make sure CoffeeScript is installed (coffeescript.org)'
+whence java || echo '`java` missing from path; make sure some JRE is installed'
+unset whence
 
 unset root
