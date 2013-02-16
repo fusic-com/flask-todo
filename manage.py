@@ -18,7 +18,7 @@ from backend.app import initialize_app
 app = initialize_app(settings)
 
 # import libraries
-from utils.ext.path import Path
+from utils.dbutils import reset_database, DatabaseControlError
 
 # import our code after initialization of app
 from config.log import setup_logging
@@ -40,12 +40,10 @@ def runserver(port=5000, bindhost='127.0.0.1'):
 @manager.command
 def recreatedb():
     "destroy the database (if any) and recreate it"
-    uri = settings.SQLALCHEMY_DATABASE_URI
-    if uri.scheme == 'sqlite':
-        Path(uri.path).unlink_p()
-        pass
-    else:
-        raise NotImplementedError('unknown database scheme %s' % (uri.scheme,))
+    try:
+        reset_database(settings.SQLALCHEMY_DATABASE_URI)
+    except DatabaseControlError, error:
+        print("failed resetting database: %s" % (error,))
     with app.app_context():
         db.create_all()
 
