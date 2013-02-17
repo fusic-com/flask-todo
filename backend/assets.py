@@ -29,6 +29,7 @@ asset_spec = {
     "index.js": ('index/*.coffee','index/*.jst',),
     "index.css": ('index/*.scss',),
     "todo.js": ('todo/jst/*.jst',),
+    "todo.css": ('todo/css/*.css',),
 }
 
 def get_rules(kind):
