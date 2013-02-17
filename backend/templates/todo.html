@@ -1,0 +1,26 @@
+{% extends "main.html" %}
+
+{% block head -%}
+    {{ super() }}
+    <script type="text/javascript" charset="utf-8" src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.10/backbone-min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="//cdnjs.cloudflare.com/ajax/libs/backbone-localstorage.js/1.1.0/backbone.localStorage-min.js"></script>
+    {% assets "todo.js" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    {% assets "todo.css" %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}"/>
+    {% endassets %}
+{%- endblock %}
+
+{% block title %}Backbone.js • TodoMVC{% endblock %}
+
+{% block body -%}
+	<section id="todoapp"></section>
+	<div id="info">
+		<p>Double-click to edit a todo</p>
+		<p>Based on the work of <a href="https://github.com/addyosmani">Addy Osmani</a></p>
+		<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+		<p>Modified by Yaniv Ben-Zaken (@cizei)</p>
+	</div>
+{%- endblock %}

@@ -28,6 +28,7 @@ class Depends(Special): pass
 asset_spec = {
     "index.js": ('index/*.coffee','index/*.jst',),
     "index.css": ('index/*.scss',),
+    "todo.js": ('todo/jst/*.jst',),
 }
 
 def get_rules(kind):
