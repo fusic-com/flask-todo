@@ -28,7 +28,8 @@ class Depends(Special): pass
 asset_spec = {
     "index.js": ('index/*.coffee','index/*.jst',),
     "index.css": ('index/*.scss',),
-    "todo.js": ('todo/jst/*.jst',),
+    "todo.js": ('todo/jst/*.jst', 'todo/TodoModel.coffee', 'todo/TodoCollection.coffee', 'todo/TodoView.coffee',
+                'todo/Router.coffee', 'todo/AppView.coffee', 'todo/app.coffee',),
     "todo.css": ('todo/css/*.css',),
 }
 
