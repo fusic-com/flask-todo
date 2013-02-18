@@ -2,7 +2,7 @@ window.jj ?= {}
 
 window.jj.TodoCollection = class TodoCollection extends Backbone.Collection
     model: jj.TodoModel
-    localStorage: new Store 'todos-backbone'
+    url : "/api/todos/"
     completed: ->
         return @filter((todo) ->
             return todo.get('completed')
