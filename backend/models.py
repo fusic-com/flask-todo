@@ -24,3 +24,8 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(50), unique=False)
+    completed = db.Column(db.Boolean, nullable=False, default=False)
