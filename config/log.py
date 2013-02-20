@@ -28,9 +28,13 @@ class ContextFilter(logging.Filter):
         return True
 
 def setup_logging(*roots, **kwargs):
-    if hasattr(setup_logging, 'done'):
-        return
-    setup_logging.done = True
+    if not hasattr(setup_logging, 'configured_roots'):
+        setup_logging.configured_roots = set()
+    configured_roots = setup_logging.configured_roots
+    if not configured_roots: # first invocation
+        null_handler = logging.NullHandler()
+        null_handler.set_name('null')
+        logging.getLogger().addHandler(null_handler)
     level = kwargs.pop('level', logging.DEBUG)
     formatter = logging.Formatter('[%(process)05d/%(threadName)-10s] [%(levelno)02d] %(context_id)s '
                                   '%(name)-12s %(message)s')
@@ -38,6 +42,9 @@ def setup_logging(*roots, **kwargs):
     handler.setFormatter(formatter)
     handler.addFilter(ContextFilter())
     for root_name in {'jj'}.union(roots):
+        if root_name in configured_roots:
+            continue
+        configured_roots.add(root_name)
         logger = logging.getLogger(root_name)
         logger.addHandler(handler)
         logger.setLevel(level)
