@@ -1,9 +1,11 @@
-from httplib import NO_CONTENT
+from httplib import NO_CONTENT, CONFLICT
+from functools import partial
 
-from flask import request
-from flask.ext.restful import fields
+from flask.ext.restful import fields, abort
+from flask.ext.restful.reqparse import Argument
+from sqlalchemy.exc import IntegrityError
 
-from utils.flaskutils.restful import BetterErrorHandlingApi, patched_to_marshallable_type
+from utils.flaskutils.restful import BetterErrorHandlingApi, patched_to_marshallable_type, parse_with
 
 from .. import models
 from ..app import app
@@ -12,6 +14,8 @@ from .auth import UserFieldsMixin, Session
 
 # HACK: see https://github.com/twilio/flask-restful/pull/32
 fields.to_marshallable_type = patched_to_marshallable_type
+
+JsonArg = partial(Argument, location='json', required=True)
 
 class UserMixin(UserFieldsMixin):
     model = models.User
@@ -29,12 +33,18 @@ class TodoMixin(object):
     }
 class Todo(TodoMixin, Entity):
     decorator_exemptions = ('DELETE',)
-    def put(self, id):
-        todo = models.Todo.query.get_or_404(id)
-        todo.title = request.json['title']
-        todo.completed = request.json['completed']
+    @parse_with(JsonArg('title'), JsonArg('completed', type=bool))
+    def put(self, params, id):
+        todo = models.Todo.query.get(id)
+        if todo is None:
+            todo = models.Todo(id=id)
+        for key, value in params.iteritems():
+            setattr(todo, key, value)
         models.db.session.add(todo)
-        models.db.session.commit()
+        try:
+            models.db.session.commit()
+        except IntegrityError:
+            abort(CONFLICT)
         return todo
     def delete(self, id):
         model = self.get(id)
@@ -43,8 +53,9 @@ class Todo(TodoMixin, Entity):
         return '', NO_CONTENT
 
 class Todos(TodoMixin, Collection):
-    def post(self):
-        todo = models.Todo(title=request.json['title'])
+    @parse_with(JsonArg('title'))
+    def post(self, params):
+        todo = models.Todo(title=params.title)
         models.db.session.add(todo)
         models.db.session.commit()
         return todo
