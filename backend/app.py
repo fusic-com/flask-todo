@@ -1,11 +1,12 @@
 from logging import getLogger
 from os import environ
 
-from flask import Flask
+from flask import Flask, send_from_directory
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 from utils.flaskutils import install_request_logger
+from utils.ext.path import Path
 
 app = None
 
@@ -36,5 +37,9 @@ def initialize_app(settings):
     import assets ; assets
     import api ; api
     import auth ; auth
+
+    @app.route('/favicon.ico')
+    def favicon():
+        return send_from_directory(Path(app.root_path)/'static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     return app
