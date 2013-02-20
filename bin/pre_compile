@@ -1,11 +1,5 @@
 #!/bin/sh
 
-if [ -z "$DEBUG" ]; then
-    echo '       ERROR: unable to find DEBUG environment variable!'
-    echo '              (did you run "heroku labs:enable user-env-compile" for this app?)'
-    exit 1
-fi
-
 vendor() {
     printf "       "
     echo -n "$1 "
@@ -13,6 +7,16 @@ vendor() {
 }
 
 echo "       (lines by the app will be prefixed with ---->>)"
+
+echo "---->> Validating configuration"
+printf "       "
+if ! JJ_VALIDATE_CONFIG=1 python -c 'import config.settings'; then
+    echo '       (did you run "heroku labs:enable user-env-compile" for this app?)'
+    exit 1
+else
+    echo "Configuration loaded OK"
+fi
+
 echo "---->> Fetching vendored binaries"
 mkdir -p vendor
 vendor "http://fusic.s3.amazonaws.com/executables/heroku/coffee-script-1.4.0.tar.gz"
